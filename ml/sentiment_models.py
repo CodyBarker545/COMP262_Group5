@@ -67,6 +67,9 @@ class Config:
     output_dir: str = "artifacts"
     n_per_class: int = 2996 # change to how much you want to sample per class (max neutral is 2996) can use other techniques to balance if you want more data. Include in report for future work.
     random_state: int = 42
+    enhancement_base_rating_weight: float = 0.70
+    enhancement_vader_weight: float = 0.60
+    enhancement_textblob_weight: float = 0.40
 
 
 class TextProcessor:
@@ -276,18 +279,67 @@ class SentimentPipeline:
             f.write("MLP\n")
             f.write(mlp_report + "\n")
 
-    def compute_enhanced_rating(self, df_sample, alpha=0.6):
+    def compute_enhanced_rating(self, df_sample):
+        """
+        Enhance the original rating with review-derived opinion.
+
+        Improvement over the earlier approach:
+        - combines VADER and TextBlob instead of using only one signal
+        - converts the blended text sentiment to the same 1-5 scale as the star rating
+        - adapts text influence based on confidence from review strength and model agreement
+        """
         analyzer = SentimentIntensityAnalyzer()
         df_sample = df_sample.copy()
 
-        def compute_row(row):
-            compound = analyzer.polarity_scores(str(row["reviewText"]))["compound"]
-            v_norm = (compound + 1) / 2
-            s_norm = (row["overall"] - 1) / 4
-            blended = alpha * s_norm + (1 - alpha) * v_norm
-            return round(blended * 4 + 1, 4)
+        def clamp(value, min_value, max_value):
+            return max(min_value, min(value, max_value))
 
-        df_sample["enhanced_rating"] = df_sample.apply(compute_row, axis=1)
+        def compute_row(row):
+            review_text = str(row["reviewText"])
+            vader_compound = analyzer.polarity_scores(review_text)["compound"]
+            textblob_polarity = TextBlob(review_text).sentiment.polarity
+
+            text_sentiment_score = (
+                self.config.enhancement_vader_weight * vader_compound
+                + self.config.enhancement_textblob_weight * textblob_polarity
+            )
+            text_sentiment_score = clamp(text_sentiment_score, -1.0, 1.0)
+
+            # Map the blended sentiment score from [-1, 1] to a rating-like [1, 5] scale.
+            text_based_rating = ((text_sentiment_score + 1) / 2) * 4 + 1
+
+            review_length = len(review_text.split())
+            length_confidence = min(review_length / 100.0, 1.0)
+            agreement_confidence = 1.0 - min(abs(vader_compound - textblob_polarity) / 2.0, 1.0)
+            strength_confidence = abs(text_sentiment_score)
+
+            text_confidence = clamp(
+                0.5 * strength_confidence + 0.3 * agreement_confidence + 0.2 * length_confidence,
+                0.0,
+                1.0,
+            )
+
+            base_rating_weight = self.config.enhancement_base_rating_weight
+            text_weight = (1.0 - base_rating_weight) * text_confidence
+            rating_weight = 1.0 - text_weight
+
+            enhanced_rating = rating_weight * float(row["overall"]) + text_weight * text_based_rating
+
+            return pd.Series(
+                {
+                    "vader_compound": round(vader_compound, 4),
+                    "textblob_polarity": round(textblob_polarity, 4),
+                    "text_sentiment_score": round(text_sentiment_score, 4),
+                    "text_based_rating": round(text_based_rating, 4),
+                    "text_confidence": round(text_confidence, 4),
+                    "effective_text_weight": round(text_weight, 4),
+                    "effective_rating_weight": round(rating_weight, 4),
+                    "enhanced_rating": round(enhanced_rating, 4),
+                }
+            )
+
+        enhancement_cols = df_sample.apply(compute_row, axis=1)
+        df_sample = pd.concat([df_sample, enhancement_cols], axis=1)
         df_sample["rating_diff"] = abs(df_sample["enhanced_rating"] - df_sample["overall"])
         return df_sample
 
@@ -354,7 +406,8 @@ class SentimentPipeline:
         df_train, df_test = train_test_split(
             df_sample,
             test_size=0.30,
-            stratify=df_sample["sentiment"],
+            # Phase 2 requirement 11(d): stratify using the rating value field.
+            stratify=df_sample["overall"],
             random_state=self.config.random_state
         )
 
@@ -538,12 +591,32 @@ class SentimentPipeline:
             "train_rows": len(df_train),
             "test_rows": len(df_test),
             "subset_class_distribution": df_sample["sentiment"].value_counts().to_dict(),
+            "subset_rating_distribution": df_sample["overall"].value_counts().sort_index().to_dict(),
             "train_class_distribution": df_train["sentiment"].value_counts().to_dict(),
             "test_class_distribution": df_test["sentiment"].value_counts().to_dict(),
+            "train_rating_distribution": df_train["overall"].value_counts().sort_index().to_dict(),
+            "test_rating_distribution": df_test["overall"].value_counts().sort_index().to_dict(),
             "nb_best_params": nb_grid.best_params_,
             "nb_best_cv_f1": float(nb_grid.best_score_),
             "mlp_best_params": mlp_grid.best_params_,
             "mlp_best_cv_f1": float(mlp_grid.best_score_),
+            "rating_enhancement_method": {
+                "name": "confidence-weighted blended review opinion",
+                "description": (
+                    "Enhance the original star rating with a text-derived rating built from a weighted "
+                    "combination of VADER and TextBlob sentiment, with text influence scaled by confidence."
+                ),
+                "base_rating_weight": self.config.enhancement_base_rating_weight,
+                "vader_weight": self.config.enhancement_vader_weight,
+                "textblob_weight": self.config.enhancement_textblob_weight,
+            },
+            "rating_enhancement_summary": {
+                "mean_original_rating": float(df_sample_enhanced["overall"].mean()),
+                "mean_enhanced_rating": float(df_sample_enhanced["enhanced_rating"].mean()),
+                "mean_rating_diff": float(df_sample_enhanced["rating_diff"].mean()),
+                "max_rating_diff": float(df_sample_enhanced["rating_diff"].max()),
+                "mean_text_confidence": float(df_sample_enhanced["text_confidence"].mean()),
+            },
             "results": results.to_dict(orient="records"),
         }
 

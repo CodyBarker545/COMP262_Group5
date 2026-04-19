@@ -3,9 +3,12 @@
     "data_path": "Gift_Cards.json",
     "output_dir": "artifacts",
     "n_per_class": 2996,
-    "random_state": 42
+    "random_state": 42,
+    "enhancement_base_rating_weight": 0.7,
+    "enhancement_vader_weight": 0.6,
+    "enhancement_textblob_weight": 0.4
   },
-  "generated_at": "2026-04-19 18:41:46",
+  "generated_at": "2026-04-19 19:40:45",
   "dataset_rows": 147194,
   "subset_rows": 8988,
   "train_rows": 6291,
@@ -14,6 +17,13 @@
     "Negative": 2996,
     "Positive": 2996,
     "Neutral": 2996
+  },
+  "subset_rating_distribution": {
+    "1": 2450,
+    "2": 546,
+    "3": 2996,
+    "4": 186,
+    "5": 2810
   },
   "train_class_distribution": {
     "Negative": 2097,
@@ -25,46 +35,74 @@
     "Neutral": 899,
     "Positive": 899
   },
-  "nb_best_params": {
-    "alpha": 0.5
+  "train_rating_distribution": {
+    "1": 1715,
+    "2": 382,
+    "3": 2097,
+    "4": 130,
+    "5": 1967
   },
-  "nb_best_cv_f1": 0.698148545738021,
+  "test_rating_distribution": {
+    "1": 735,
+    "2": 164,
+    "3": 899,
+    "4": 56,
+    "5": 843
+  },
+  "nb_best_params": {
+    "alpha": 1.0
+  },
+  "nb_best_cv_f1": 0.6955156548005722,
   "mlp_best_params": {
-    "alpha": 0.1,
+    "alpha": 0.01,
     "hidden_layer_sizes": [
       64,
       32
     ]
   },
-  "mlp_best_cv_f1": 0.6957092025699916,
+  "mlp_best_cv_f1": 0.6974538808539165,
+  "rating_enhancement_method": {
+    "name": "confidence-weighted blended review opinion",
+    "description": "Enhance the original star rating with a text-derived rating built from a weighted combination of VADER and TextBlob sentiment, with text influence scaled by confidence.",
+    "base_rating_weight": 0.7,
+    "vader_weight": 0.6,
+    "textblob_weight": 0.4
+  },
+  "rating_enhancement_summary": {
+    "mean_original_rating": 3.040053404539386,
+    "mean_enhanced_rating": 3.1324908099688473,
+    "mean_rating_diff": 0.18218213173119716,
+    "max_rating_diff": 0.9590000000000001,
+    "mean_text_confidence": 0.5124719737427682
+  },
   "results": [
     {
       "Model": "VADER",
-      "Accuracy": 0.43196143863552094,
-      "Precision": 0.4722703148006502,
-      "Recall": 0.43196143863552094,
-      "F1": 0.3738674327060616
+      "Accuracy": 0.44048943270300334,
+      "Precision": 0.48243174372532005,
+      "Recall": 0.44048943270300334,
+      "F1": 0.385357464377528
     },
     {
       "Model": "TextBlob",
-      "Accuracy": 0.4846125324434557,
-      "Precision": 0.487966012085538,
-      "Recall": 0.4846125324434557,
-      "F1": 0.457498963478275
+      "Accuracy": 0.4760845383759733,
+      "Precision": 0.48038359909328604,
+      "Recall": 0.4760845383759733,
+      "F1": 0.4521665410614607
     },
     {
       "Model": "Naive Bayes",
-      "Accuracy": 0.7078235076010382,
-      "Precision": 0.7029884119753401,
-      "Recall": 0.7078235076010382,
-      "F1": 0.7045629202198453
+      "Accuracy": 0.7063403781979978,
+      "Precision": 0.7019446438425275,
+      "Recall": 0.7063403781979978,
+      "F1": 0.7025824441309408
     },
     {
       "Model": "MLP",
-      "Accuracy": 0.7096774193548387,
-      "Precision": 0.7070829071969323,
-      "Recall": 0.7096774193548387,
-      "F1": 0.7079067049333753
+      "Accuracy": 0.710418984056359,
+      "Precision": 0.7078901118132888,
+      "Recall": 0.710418984056359,
+      "F1": 0.7084496229049677
     }
   ]
 }

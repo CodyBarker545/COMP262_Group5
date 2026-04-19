@@ -1,0 +1,70 @@
+{
+  "config": {
+    "data_path": "Gift_Cards.json",
+    "output_dir": "artifacts",
+    "n_per_class": 2996,
+    "random_state": 42
+  },
+  "generated_at": "2026-04-19 18:41:46",
+  "dataset_rows": 147194,
+  "subset_rows": 8988,
+  "train_rows": 6291,
+  "test_rows": 2697,
+  "subset_class_distribution": {
+    "Negative": 2996,
+    "Positive": 2996,
+    "Neutral": 2996
+  },
+  "train_class_distribution": {
+    "Negative": 2097,
+    "Neutral": 2097,
+    "Positive": 2097
+  },
+  "test_class_distribution": {
+    "Negative": 899,
+    "Neutral": 899,
+    "Positive": 899
+  },
+  "nb_best_params": {
+    "alpha": 0.5
+  },
+  "nb_best_cv_f1": 0.698148545738021,
+  "mlp_best_params": {
+    "alpha": 0.1,
+    "hidden_layer_sizes": [
+      64,
+      32
+    ]
+  },
+  "mlp_best_cv_f1": 0.6957092025699916,
+  "results": [
+    {
+      "Model": "VADER",
+      "Accuracy": 0.43196143863552094,
+      "Precision": 0.4722703148006502,
+      "Recall": 0.43196143863552094,
+      "F1": 0.3738674327060616
+    },
+    {
+      "Model": "TextBlob",
+      "Accuracy": 0.4846125324434557,
+      "Precision": 0.487966012085538,
+      "Recall": 0.4846125324434557,
+      "F1": 0.457498963478275
+    },
+    {
+      "Model": "Naive Bayes",
+      "Accuracy": 0.7078235076010382,
+      "Precision": 0.7029884119753401,
+      "Recall": 0.7078235076010382,
+      "F1": 0.7045629202198453
+    },
+    {
+      "Model": "MLP",
+      "Accuracy": 0.7096774193548387,
+      "Precision": 0.7070829071969323,
+      "Recall": 0.7096774193548387,
+      "F1": 0.7079067049333753
+    }
+  ]
+}

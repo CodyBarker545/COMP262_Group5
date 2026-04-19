@@ -1,108 +1,97 @@
-# Sentiment Backend
+# COMP262 Group Project
 
-This repository includes a lightweight backend that serves the trained sentiment models saved in `ml/artifacts`.
+This repository contains the Phase 2 sentiment-analysis pipeline, generated artifacts, LLM task helpers, and a lightweight backend for frontend integration.
 
-## Current project status
+## Project layout
 
-The machine learning pipeline was updated and retrained before connecting the backend. The main improvements were:
+- [ml/sentiment_models.py](/GroupProject262/ml/sentiment_models.py): main Phase 2 training and evaluation pipeline
+- [ml/run_phase2_llm_tasks.py](/GroupProject262/ml/run_phase2_llm_tasks.py): requirement 16 and 17 helper for local Hugging Face summarization and service-response generation
+- [ml/PHASE2README.md](GroupProject262/ml/PHASE2README.md): submission-focused Phase 2 run guide
+- [backend/README.md](/GroupProject262/backend/README.md): backend API documentation
+- [OldPDF/build_report.py](/GroupProject262/OldPDF/build_report.py): PDF report builder for the saved artifacts
 
-- built a **balanced real subset** of the Amazon Gift Cards dataset using:
-  - 2000 Positive reviews
-  - 2000 Neutral reviews
-  - 2000 Negative reviews
-- used a **70/30 train-test split** on that balanced subset
-- improved preprocessing by:
-  - keeping negation words such as `not`, `no`, `never`, `nor`, `none`, `nothing`, and `nowhere`
-  - expanding contractions such as `didn't` → `did not`
-  - applying **negation handling** before cleaning so phrases like `not good` become `NOT_good`
-  - keeping exclamation marks in the cleaned text to preserve strong sentiment cues
-- used TF-IDF with:
-  - `max_features=8000`
-  - `ngram_range=(1, 2)`
-  - `min_df=2`
-  - `max_df=0.85`
-  - `sublinear_tf=True`
-- added extra numeric features:
-  - `review_length`
-  - `exclamation_count`
-  - `uppercase_count`
-- trained and compared:
-  - VADER
-  - TextBlob
-  - Naive Bayes
-  - MLP
+## Current ML pipeline
 
-## Latest model scores
+The current saved artifact run uses:
 
-All models were evaluated on the same 30% test split.
+- a balanced real subset with `2996` reviews per sentiment class
+- TF-IDF with unigrams and bigrams
+- extra numeric features: `review_length`, `exclamation_count`, `uppercase_count`
+- a `70/30` split stratified by the `overall` rating field
+- two machine-learning models: `Naive Bayes` and `MLP`
+- lexicon baselines: `VADER` and `TextBlob`
+- a confidence-weighted rating-enhancement step that blends the original star rating with review-derived opinion from `VADER` and `TextBlob`
 
-## What caused the score updates
+## Current saved results
 
-The scores changed over time because the preprocessing and training pipeline were corrected and improved.
+From [ml/artifacts/reports/run_metadata.json](/GroupProject262/ml/artifacts/reports/run_metadata.json):
 
-### Earlier issues
-Earlier experimental runs produced inflated scores because of data handling problems such as:
-- balancing before splitting
-- oversampling and augmentation affecting evaluation
-- unrealistic test distributions
+- `Naive Bayes` weighted F1: `0.7026`
+- `MLP` weighted F1: `0.7084`
+- current best model: `MLP`
+- mean original rating: `3.0401`
+- mean enhanced rating: `3.1325`
 
-These issues made results look stronger than they really were.
+The generated report artifacts are in:
 
-### What improved the final results
-The current scores are more realistic because of the following changes:
+- [ml/artifacts/reports](/GroupProject262/ml/artifacts/reports)
+- [ml/artifacts/figures](/GroupProject262/ml/artifacts/figures)
+- [ml/artifacts/phase2_report.pdf](/GroupProject262/ml/artifacts/phase2_report.pdf)
 
-1. **Balanced real sampling**
-   - Instead of duplicating minority classes, the pipeline now uses real reviews from each class.
-   - This created a fairer train/test evaluation setup.
+## Run the ML pipeline
 
-2. **Negation handling**
-   - Phrases like `not good`, `not working`, and `not worth` are now represented more clearly for the model.
-   - This especially helped Naive Bayes.
+From the project root:
 
-3. **Contraction expansion**
-   - Examples like `didn't` are converted to `did not` before negation handling.
-   - This made negation detection more reliable.
+```powershell
+.\.venv\Scripts\python.exe ml\sentiment_models.py
+```
 
-4. **Improved feature engineering**
-   - TF-IDF settings were expanded to capture more useful text patterns.
-   - Additional numeric features captured emotional intensity and writing style.
+This will:
 
-5. **Cleaner evaluation**
-   - All models now run on the same held-out test split.
-   - This gives a valid apples-to-apples comparison.
+- train and evaluate `VADER`, `TextBlob`, `Naive Bayes`, and `MLP`
+- save figures to `ml/artifacts/figures`
+- save reports and CSV outputs to `ml/artifacts/reports`
+- update the saved joblib model artifacts in `ml/artifacts`
 
-## Best current model
+## Run the LLM tasks
 
-The best current model by weighted F1 is:
+For Phase 2 requirements `16` and `17`:
 
-- **MLP**
-  - F1: **0.707907**
+```powershell
+.\.venv\Scripts\python.exe ml\run_phase2_llm_tasks.py --device -1
+```
 
-Although NB remains very competitive, MLP slightly outperformed it in the latest run after the negation and contraction updates.
+This saves:
 
-## What the backend does
+- [ml/artifacts/reports/llm_outputs.json](/GroupProject262/ml/artifacts/reports/llm_outputs.json)
 
-- Accepts a single text message and returns sentiment predictions from both models.
-- Accepts an uploaded `.csv` or `.json` file, classifies each text row, and returns a new downloadable file.
-- Adds these columns to batch outputs:
-  - `nb_sentiment`
-  - `mlp_sentiment`
-  - `final_sentiment`
-  - `models_agree`
+The default local Hugging Face model is `Qwen/Qwen2.5-0.5B-Instruct`. It was chosen because the assignment requires a locally hosted Hugging Face LLM for summarization and customer-service response generation, and this model is instruction-tuned while still being small enough to run locally more easily than much larger models.
 
-`final_sentiment` uses the MLP result when the two models disagree.
+Use `--device 0` if you have a local GPU and the model is already available.
 
-## API
+## Rebuild the PDF report
 
-### `GET /health`
+The current report builder lives here:
 
-Returns a simple status payload.
+- [OldPDF/build_report.py](/GroupProject262/OldPDF/build_report.py)
 
-### `POST /api/classify-text`
+Run it with:
 
-Request body:
+```powershell
+.\.venv\Scripts\python.exe OldPDF\build_report.py
+```
 
-```json
-{
-  "text": "This card arrived quickly and worked great!"
-}
+## Backend
+
+The backend serves the trained artifacts for:
+
+- single-message sentiment classification
+- batch CSV/JSON upload classification
+
+Run it with:
+
+```powershell
+.\.venv\Scripts\python.exe -m backend.server
+```
+
+See [backend/README.md]/GroupProject262/backend/README.md) for API details.
