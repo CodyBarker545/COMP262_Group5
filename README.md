@@ -2,6 +2,26 @@
 
 This repository contains the Phase 2 sentiment-analysis pipeline, generated artifacts, LLM task helpers, and a lightweight backend for frontend integration.
 
+## Setup
+
+This project expects Python `3.13` and a virtual environment.
+
+From the project root:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+Additional setup notes:
+
+- `requirements.txt` installs the ML stack, backend dependencies, `reportlab` for PDF generation, and `transformers`/`torch` for the local Hugging Face tasks.
+- The code tries to download NLTK resources such as `stopwords` and `wordnet` automatically. If your machine is offline, run once on a machine with internet access or pre-download those corpora into your NLTK data directory.
+- The first run of `ml/run_phase2_llm_tasks.py` may download the Hugging Face model `Qwen/Qwen2.5-0.5B-Instruct` if it is not already cached locally.
+- If you want GPU inference for the LLM tasks, make sure your local PyTorch install matches your CUDA setup; otherwise use `--device -1` for CPU.
+
 ## Project layout
 
 - [ml/sentiment_models.py](/GroupProject262/ml/sentiment_models.py): main Phase 2 training and evaluation pipeline

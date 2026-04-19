@@ -2,6 +2,25 @@
 
 This project includes a Python backend that loads the trained sentiment models from `ml/artifacts` and exposes them as HTTP APIs for your frontend.
 
+## Setup
+
+From the project root:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+Before starting the backend, make sure the trained artifact files exist in `ml/artifacts`:
+
+- `nb_model.joblib`
+- `mlp_model.joblib`
+- `tfidf.joblib`
+- `scaler.joblib`
+- `label_encoder.joblib`
+
 The backend supports two main user flows:
 
 1. A user types a single message and gets its sentiment.

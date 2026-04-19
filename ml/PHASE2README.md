@@ -2,11 +2,29 @@
 
 This file maps the assignment requirements to the current code, saved artifacts, and the commands you should run before submission.
 
+## Setup
+
+From the project root:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+Before running Phase 2 scripts:
+
+- make sure `ml/Gift_Cards.json` is present
+- make sure NLTK resources such as `stopwords` and `wordnet` are available locally if your machine is offline
+- expect the first Hugging Face run to download `Qwen/Qwen2.5-0.5B-Instruct` unless it is already cached
+- use `--device -1` for CPU or `--device 0` for the first local GPU
+
 ## Main Phase 2 files
 
-- [sentiment_models.py](D:/SoftwareEng/SEMESTER6/COMP262-Natural%20Language%20%26%20Recom%20Sys/GroupProject262/ml/sentiment_models.py): training, evaluation, figures, enhanced ratings, and saved model artifacts
-- [run_phase2_llm_tasks.py](D:/SoftwareEng/SEMESTER6/COMP262-Natural%20Language%20%26%20Recom%20Sys/GroupProject262/ml/run_phase2_llm_tasks.py): local Hugging Face tasks for requirements `16` and `17`
-- [OldPDF/build_report.py](D:/SoftwareEng/SEMESTER6/COMP262-Natural%20Language%20%26%20Recom%20Sys/GroupProject262/OldPDF/build_report.py): report builder that assembles the PDF from saved artifacts
+- [sentiment_models.py](/GroupProject262/ml/sentiment_models.py): training, evaluation, figures, enhanced ratings, and saved model artifacts
+- [run_phase2_llm_tasks.py](/GroupProject262/ml/run_phase2_llm_tasks.py): local Hugging Face tasks for requirements `16` and `17`
+- [OldPDF/build_report.py](/GroupProject262/OldPDF/build_report.py): report builder that assembles the PDF from saved artifacts
 
 ## What the current pipeline does
 
@@ -25,7 +43,7 @@ The current implementation covers:
 
 ## Current saved artifact snapshot
 
-From [artifacts/reports/run_metadata.json](D:/SoftwareEng/SEMESTER6/COMP262-Natural%20Language%20%26%20Recom%20Sys/GroupProject262/ml/artifacts/reports/run_metadata.json):
+From [artifacts/reports/run_metadata.json](/GroupProject262/ml/artifacts/reports/run_metadata.json):
 
 - subset rows: `8988`
 - train rows: `6291`
@@ -36,9 +54,9 @@ From [artifacts/reports/run_metadata.json](D:/SoftwareEng/SEMESTER6/COMP262-Natu
 
 The saved LLM outputs already exist in:
 
-- [artifacts/reports/llm_outputs.json](D:/SoftwareEng/SEMESTER6/COMP262-Natural%20Language%20%26%20Recom%20Sys/GroupProject262/ml/artifacts/reports/llm_outputs.json)
+- [artifacts/reports/llm_outputs.json](/GroupProject262/ml/artifacts/reports/llm_outputs.json)
 
-For requirements `16` and `17`, the project currently uses `Qwen/Qwen2.5-0.5B-Instruct`. The assignment does not require Qwen specifically; it requires a local Hugging Face LLM. This model was chosen because it is instruction-tuned and lightweight enough to be practical for local summarization and response generation.
+For requirements `16` and `17`, the project currently uses `Qwen/Qwen2.5-0.5B-Instruct`. The assignment requires a local Hugging Face LLM. This model was chosen because it is instruction-tuned and lightweight enough to be practical for local summarization and response generation.
 
 ## Recommended run order
 
@@ -62,12 +80,12 @@ If you want to run from inside `ml`:
 
 The pipeline saves these important outputs:
 
-- [artifacts/reports/model_results.csv](D:/SoftwareEng/SEMESTER6/COMP262-Natural%20Language%20%26%20Recom%20Sys/GroupProject262/ml/artifacts/reports/model_results.csv)
-- [artifacts/reports/classification_reports.txt](D:/SoftwareEng/SEMESTER6/COMP262-Natural%20Language%20%26%20Recom%20Sys/GroupProject262/ml/artifacts/reports/classification_reports.txt)
-- [artifacts/reports/enhanced_ratings.csv](D:/SoftwareEng/SEMESTER6/COMP262-Natural%20Language%20%26%20Recom%20Sys/GroupProject262/ml/artifacts/reports/enhanced_ratings.csv)
-- [artifacts/reports/llm_outputs.json](D:/SoftwareEng/SEMESTER6/COMP262-Natural%20Language%20%26%20Recom%20Sys/GroupProject262/ml/artifacts/reports/llm_outputs.json)
-- [artifacts/figures](D:/SoftwareEng/SEMESTER6/COMP262-Natural%20Language%20%26%20Recom%20Sys/GroupProject262/ml/artifacts/figures)
-- [artifacts/phase2_report.pdf](D:/SoftwareEng/SEMESTER6/COMP262-Natural%20Language%20%26%20Recom%20Sys/GroupProject262/ml/artifacts/phase2_report.pdf)
+- [artifacts/reports/model_results.csv](/GroupProject262/ml/artifacts/reports/model_results.csv)
+- [artifacts/reports/classification_reports.txt](/GroupProject262/ml/artifacts/reports/classification_reports.txt)
+- [artifacts/reports/enhanced_ratings.csv](/GroupProject262/ml/artifacts/reports/enhanced_ratings.csv)
+- [artifacts/reports/llm_outputs.json](/GroupProject262/ml/artifacts/reports/llm_outputs.json)
+- [artifacts/figures](/GroupProject262/ml/artifacts/figures)
+- [artifacts/phase2_report.pdf](/GroupProject262/ml/artifacts/phase2_report.pdf)
 
 ## Notes for requirement 15
 
@@ -79,4 +97,4 @@ The current code uses a confidence-weighted blended review-opinion method:
 - text influence is scaled by review confidence
 - the final result is saved as `enhanced_rating`
 
-This is implemented in [sentiment_models.py](D:/SoftwareEng/SEMESTER6/COMP262-Natural%20Language%20%26%20Recom%20Sys/GroupProject262/ml/sentiment_models.py).
+This is implemented in [sentiment_models.py](/GroupProject262/ml/sentiment_models.py).
